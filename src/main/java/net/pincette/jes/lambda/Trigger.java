@@ -59,15 +59,27 @@ public class Trigger {
                 .invocationType(EVENT)
                 .payload(fromUtf8String(string(message)))
                 .build())
-        .thenAccept(
+        .thenApply(
             response ->
                 Optional.ofNullable(response.functionError())
-                    .ifPresent(
+                    .map(
                         error ->
-                            logger.log(
-                                SEVERE,
-                                "Calling lambda {0} returned error {1} with payload {2}",
-                                new Object[] {arn, error, response.payload().asUtf8String()})));
+                            SideEffect.<Boolean>run(
+                                    () ->
+                                        logger.log(
+                                            SEVERE,
+                                            "Calling lambda {0} returned error {1} with payload {2}",
+                                            new Object[] {
+                                              arn, error, response.payload().asUtf8String()
+                                            }))
+                                .andThenGet(() -> false))
+                    .orElse(true))
+        .exceptionally(
+            e ->
+                SideEffect.<Boolean>run(
+                        () ->
+                            logger.log(SEVERE, "Calling lambda " + arn + " returned exception", e))
+                    .andThenGet(() -> false));
   }
 
   private static void connect(
