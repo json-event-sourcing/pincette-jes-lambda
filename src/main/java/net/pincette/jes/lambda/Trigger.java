@@ -45,7 +45,7 @@ public class Trigger {
   private static final String KAFKA = "kafka";
   private static final String LOG_LEVEL = "logLevel";
   private static final String LOG_TOPIC = "logTopic";
-  private static final String VERSION = "1.0";
+  private static final String VERSION = "1.0.2";
 
   private static void callLambda(
       final String arn,
@@ -78,7 +78,8 @@ public class Trigger {
             e ->
                 SideEffect.<Boolean>run(
                         () ->
-                            logger.log(SEVERE, "Calling lambda " + arn + " returned exception", e))
+                            logger.log(
+                                SEVERE, e, () -> "Calling lambda " + arn + " returned exception"))
                     .andThenGet(() -> false));
   }
 
