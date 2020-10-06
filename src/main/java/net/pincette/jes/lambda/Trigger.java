@@ -26,6 +26,7 @@ import javax.json.JsonObject;
 import net.pincette.function.SideEffect;
 import net.pincette.jes.util.JsonSerializer;
 import net.pincette.jes.util.Streams;
+import net.pincette.jes.util.Streams.TopologyLifeCycleEmitter;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -45,7 +46,8 @@ public class Trigger {
   private static final String KAFKA = "kafka";
   private static final String LOG_LEVEL = "logLevel";
   private static final String LOG_TOPIC = "logTopic";
-  private static final String VERSION = "1.0.2";
+  private static final String TOPOLOGY_TOPIC = "topologyTopic";
+  private static final String VERSION = "1.0.3";
 
   private static void callLambda(
       final String arn,
@@ -129,7 +131,12 @@ public class Trigger {
 
       logger.log(INFO, "Topology:\n\n {0}", topology.describe());
 
-      if (!start(topology, Streams.fromConfig(config, KAFKA))) {
+      if (!start(
+          topology,
+          Streams.fromConfig(config, KAFKA),
+          tryToGetSilent(() -> config.getString(TOPOLOGY_TOPIC))
+              .map(topic -> new TopologyLifeCycleEmitter(topic, producer))
+              .orElse(null))) {
         exit(1);
       }
     }

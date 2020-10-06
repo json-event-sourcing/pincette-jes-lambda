@@ -14,6 +14,7 @@ The configuration is managed by the
 |kafka|All Kafka settings come below this entry. So for example, the setting ```bootstrap.servers``` would go to the entry ```kafka.bootstrap.servers```.|
 |kafka.num.stream.threads|The number of worker threads per instance.|
 |kafka.replication.factor|When using Confluent Cloud this should be 3.|
+|topologyTopic|When this Kafka topic is set topology life cycle events will be sent to it.|
 |triggers|This is an object where the keys are Kafka topics and the values are arrays of AWS ARNs denoting lambda functions.|
 
 ## Building and Running
